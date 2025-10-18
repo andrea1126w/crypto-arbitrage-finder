@@ -6,16 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowUpDown, TrendingUp, TrendingDown, Activity, DollarSign, Filter, RefreshCw, ChevronRight, AlertCircle } from "lucide-react";
+import { ArrowUpDown, TrendingUp, TrendingDown, Activity, DollarSign, Filter, RefreshCw, ChevronRight, AlertCircle, ExternalLink } from "lucide-react";
 import type { ArbitrageOpportunity, OpportunityFilter } from "@shared/schema";
 import { SUPPORTED_EXCHANGES, SUPPORTED_PAIRS } from "@shared/schema";
+import { EXCHANGE_LINKS } from "@shared/exchangeLinks";
 
 function LiveStatusIndicator({ isConnected }: { isConnected: boolean }) {
   return (
     <div className="flex items-center gap-2" data-testid="status-connection">
       <div className={`h-2 w-2 rounded-full ${isConnected ? 'bg-primary animate-pulse' : 'bg-destructive'}`} />
       <span className="text-sm font-medium text-muted-foreground">
-        {isConnected ? 'Live' : 'Disconnected'}
+        {isConnected ? 'In Diretta' : 'Disconnesso'}
       </span>
     </div>
   );
@@ -37,25 +38,25 @@ function FeeBreakdown({
   return (
     <div className="space-y-3" data-testid="fee-breakdown">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Gross Profit</span>
+        <span className="text-muted-foreground">Profitto Lordo</span>
         <span className="font-mono font-semibold text-primary">${grossProfit.toFixed(2)}</span>
       </div>
       <div className="space-y-2 rounded-md bg-muted/30 p-3">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Trading Fees</span>
+          <span className="text-muted-foreground">Commissioni Trading</span>
           <span className="font-mono text-destructive">-${tradingFees.toFixed(2)}</span>
         </div>
         <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Network Fees</span>
+          <span className="text-muted-foreground">Commissioni Rete</span>
           <span className="font-mono text-destructive">-${networkFees.toFixed(2)}</span>
         </div>
         <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Estimated Slippage</span>
+          <span className="text-muted-foreground">Slippage Stimato</span>
           <span className="font-mono text-destructive">-${slippage.toFixed(2)}</span>
         </div>
       </div>
       <div className="flex items-center justify-between border-t border-border pt-2 text-sm font-bold">
-        <span className="text-foreground">Total Fees</span>
+        <span className="text-foreground">Totale Commissioni</span>
         <span className="font-mono text-destructive">-${totalFees.toFixed(2)}</span>
       </div>
     </div>
@@ -65,124 +66,251 @@ function FeeBreakdown({
 function ExecutionGuideModal({ opportunity }: { opportunity: ArbitrageOpportunity }) {
   const buyExchange = SUPPORTED_EXCHANGES.find(e => e.id === opportunity.buyExchange);
   const sellExchange = SUPPORTED_EXCHANGES.find(e => e.id === opportunity.sellExchange);
+  const buyLinks = EXCHANGE_LINKS[opportunity.buyExchange];
+  const sellLinks = EXCHANGE_LINKS[opportunity.sellExchange];
   
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="w-full" data-testid="button-execution-guide">
           <ChevronRight className="mr-2 h-4 w-4" />
-          Execution Guide
+          Guida Esecuzione
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" data-testid="modal-execution-guide">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" data-testid="modal-execution-guide">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Manual Execution Guide</DialogTitle>
+          <DialogTitle className="text-2xl">Guida Esecuzione Manuale</DialogTitle>
           <DialogDescription>
-            Step-by-step instructions to execute this arbitrage opportunity
+            Istruzioni passo-passo per eseguire questa opportunità di arbitraggio
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6 mt-4">
-          <div className="rounded-lg bg-muted/30 p-4">
-            <h3 className="font-semibold mb-2">Opportunity Summary</h3>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg bg-primary/10 border border-primary/30 p-4">
+            <h3 className="font-semibold mb-3 text-lg">📊 Riepilogo Opportunità</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">Pair:</span>
-                <span className="ml-2 font-mono font-semibold">{opportunity.pair}</span>
+                <span className="text-muted-foreground">Coppia:</span>
+                <span className="ml-2 font-mono font-bold text-lg">{opportunity.pair}</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Net Profit:</span>
-                <span className="ml-2 font-mono font-semibold text-primary">
+                <span className="text-muted-foreground">Profitto Netto:</span>
+                <span className="ml-2 font-mono font-bold text-primary text-lg">
                   ${opportunity.netProfitUsd.toFixed(2)} ({opportunity.netProfitPercentage.toFixed(2)}%)
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+          <div className="space-y-5">
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/30">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">
                 1
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold mb-1">Buy on {buyExchange?.name}</h4>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Purchase {opportunity.pair} at ${opportunity.buyPrice.toFixed(2)}
-                </p>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Log into your {buyExchange?.name} account</li>
-                  <li>• Navigate to {opportunity.pair} trading pair</li>
-                  <li>• Place a market buy order for $100 worth</li>
-                  <li>• Trading fee: ~{buyExchange?.tradingFee}%</li>
-                </ul>
+              <div className="flex-1 space-y-3">
+                <div>
+                  <h4 className="font-bold text-lg mb-1">💰 Acquista su {buyExchange?.name}</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Acquista {opportunity.pair} al prezzo di <span className="font-mono font-semibold text-primary">${opportunity.buyPrice.toFixed(2)}</span>
+                  </p>
+                </div>
+
+                <div className="space-y-2 border-l-2 border-primary/30 pl-4">
+                  <p className="text-sm font-semibold">🔐 Se non hai ancora un account:</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-between"
+                    onClick={() => window.open(buyLinks.register, '_blank')}
+                  >
+                    <span>Registrati su {buyExchange?.name}</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <ul className="text-xs space-y-1 text-muted-foreground ml-4">
+                    <li>• Clicca il pulsante sopra per aprire la pagina di registrazione</li>
+                    <li>• Completa la registrazione con email e password</li>
+                    <li>• Verifica la tua identità (KYC) seguendo le istruzioni</li>
+                    <li>• Abilita l'autenticazione a due fattori (2FA) per sicurezza</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2 border-l-2 border-primary/30 pl-4">
+                  <p className="text-sm font-semibold">💵 Deposita fondi:</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-between"
+                    onClick={() => window.open(buyLinks.depositGuide, '_blank')}
+                  >
+                    <span>Guida Deposito {buyExchange?.name}</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <ul className="text-xs space-y-1 text-muted-foreground ml-4">
+                    <li>• Deposita almeno $100 in USDT o altra stablecoin</li>
+                    <li>• Puoi depositare tramite bonifico, carta o crypto</li>
+                    <li>• Il deposito richiede 5-30 minuti per confermarsi</li>
+                  </ul>
+                </div>
+
+                <div className="space-y-2 border-l-2 border-primary/30 pl-4">
+                  <p className="text-sm font-semibold">📈 Effettua l'acquisto:</p>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="w-full justify-between"
+                    onClick={() => window.open(buyLinks.tradingUrl(opportunity.pair), '_blank')}
+                  >
+                    <span>Vai alla Pagina Trading {opportunity.pair}</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <ul className="text-xs space-y-1 text-muted-foreground ml-4">
+                    <li>• Cerca la coppia {opportunity.pair} nella barra di ricerca</li>
+                    <li>• Seleziona "Market Order" (ordine al mercato)</li>
+                    <li>• Inserisci $100 come importo da spendere</li>
+                    <li>• Clicca "Buy" (Acquista) e conferma l'ordine</li>
+                    <li>• Commissione trading: circa {buyExchange?.tradingFee}%</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
             {buyExchange?.type === "CEX" && sellExchange?.type === "CEX" && (
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+              <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/30">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">
                   2
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold mb-1">Transfer to {sellExchange?.name}</h4>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Withdraw from {buyExchange?.name} and deposit to {sellExchange?.name}
-                  </p>
-                  <ul className="text-sm space-y-1 text-muted-foreground">
-                    <li>• Initiate withdrawal from {buyExchange?.name}</li>
-                    <li>• Use your {sellExchange?.name} deposit address</li>
-                    <li>• Wait for network confirmations (5-30 min)</li>
-                    <li>• Network fees will apply</li>
-                  </ul>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h4 className="font-bold text-lg mb-1">🔄 Trasferisci a {sellExchange?.name}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Preleva da {buyExchange?.name} e deposita su {sellExchange?.name}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 border-l-2 border-primary/30 pl-4">
+                    <p className="text-sm font-semibold">📤 Preleva da {buyExchange?.name}:</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-between"
+                      onClick={() => window.open(buyLinks.withdrawGuide, '_blank')}
+                    >
+                      <span>Guida Prelievo {buyExchange?.name}</span>
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    <ul className="text-xs space-y-1 text-muted-foreground ml-4">
+                      <li>• Vai su "Wallet" → "Withdraw" (Preleva)</li>
+                      <li>• Seleziona {opportunity.pair.split('/')[0]}</li>
+                      <li>• Inserisci l'indirizzo di deposito di {sellExchange?.name}</li>
+                      <li>• Scegli la rete corretta (es: BSC, ETH, TRC20)</li>
+                    </ul>
+                  </div>
+
+                  <div className="space-y-2 border-l-2 border-primary/30 pl-4">
+                    <p className="text-sm font-semibold">📥 Deposita su {sellExchange?.name}:</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-between"
+                      onClick={() => window.open(sellLinks.depositGuide, '_blank')}
+                    >
+                      <span>Guida Deposito {sellExchange?.name}</span>
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    <ul className="text-xs space-y-1 text-muted-foreground ml-4">
+                      <li>• Copia il tuo indirizzo di deposito da {sellExchange?.name}</li>
+                      <li>• Incollalo nel prelievo di {buyExchange?.name}</li>
+                      <li>• Attendi le conferme di rete (5-30 minuti)</li>
+                      <li>• Commissione rete: circa ${opportunity.networkFees.toFixed(2)}</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             )}
 
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/30">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">
                 {buyExchange?.type === "CEX" && sellExchange?.type === "CEX" ? "3" : "2"}
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold mb-1">Sell on {sellExchange?.name}</h4>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Sell {opportunity.pair} at ${opportunity.sellPrice.toFixed(2)}
-                </p>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Log into your {sellExchange?.name} account</li>
-                  <li>• Navigate to {opportunity.pair} trading pair</li>
-                  <li>• Place a market sell order for all your holdings</li>
-                  <li>• Trading fee: ~{sellExchange?.tradingFee}%</li>
-                </ul>
+              <div className="flex-1 space-y-3">
+                <div>
+                  <h4 className="font-bold text-lg mb-1">💸 Vendi su {sellExchange?.name}</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Vendi {opportunity.pair} al prezzo di <span className="font-mono font-semibold text-primary">${opportunity.sellPrice.toFixed(2)}</span>
+                  </p>
+                </div>
+
+                <div className="space-y-2 border-l-2 border-primary/30 pl-4">
+                  <p className="text-sm font-semibold">📉 Effettua la vendita:</p>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="w-full justify-between"
+                    onClick={() => window.open(sellLinks.tradingUrl(opportunity.pair), '_blank')}
+                  >
+                    <span>Vai alla Pagina Trading {opportunity.pair}</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                  <ul className="text-xs space-y-1 text-muted-foreground ml-4">
+                    <li>• Accedi al tuo account {sellExchange?.name}</li>
+                    <li>• Cerca la coppia {opportunity.pair}</li>
+                    <li>• Seleziona "Market Order" (ordine al mercato)</li>
+                    <li>• Clicca "Sell All" (Vendi Tutto) o inserisci l'importo</li>
+                    <li>• Conferma la vendita</li>
+                    <li>• Commissione trading: circa {sellExchange?.tradingFee}%</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+            <div className="flex items-start gap-4 p-4 rounded-lg bg-primary/10 border border-primary/30">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">
                 {buyExchange?.type === "CEX" && sellExchange?.type === "CEX" ? "4" : "3"}
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold mb-1">Realize Profit</h4>
-                <p className="text-sm text-muted-foreground">
-                  Your net profit after all fees should be approximately ${opportunity.netProfitUsd.toFixed(2)}
+                <h4 className="font-bold text-lg mb-2">✅ Realizzo Profitto</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Il tuo profitto netto dopo tutte le commissioni dovrebbe essere circa:
                 </p>
+                <div className="text-center p-4 rounded-lg bg-primary/20">
+                  <div className="text-3xl font-bold font-mono text-primary">
+                    ${opportunity.netProfitUsd.toFixed(2)}
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    ({opportunity.netProfitPercentage.toFixed(2)}% del capitale)
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-semibold text-destructive mb-1">Important Warnings</p>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Prices change rapidly - this opportunity may disappear</li>
-                  <li>• Actual fees may vary from estimates</li>
-                  <li>• Network congestion can increase fees significantly</li>
-                  <li>• Always verify prices before executing trades</li>
-                  <li>• Never invest more than you can afford to lose</li>
+                <p className="font-bold text-destructive mb-2 text-base">⚠️ Avvertenze Importanti</p>
+                <ul className="space-y-1.5 text-muted-foreground">
+                  <li>• <strong>I prezzi cambiano rapidamente</strong> - questa opportunità potrebbe scomparire in pochi minuti</li>
+                  <li>• <strong>Le commissioni variano</strong> - quelle reali potrebbero differire dalle stime</li>
+                  <li>• <strong>Congestione di rete</strong> - può aumentare significativamente le commissioni</li>
+                  <li>• <strong>Verifica sempre i prezzi</strong> - prima di eseguire qualsiasi operazione</li>
+                  <li>• <strong>Non investire più di quanto puoi permetterti di perdere</strong></li>
+                  <li>• <strong>Slippage</strong> - il prezzo effettivo può differire da quello mostrato</li>
+                  <li>• <strong>Tempi di trasferimento</strong> - i trasferimenti tra exchange richiedono tempo</li>
                 </ul>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-lg bg-muted/30 p-4">
+            <h3 className="font-semibold mb-3">💡 Suggerimenti per Massimizzare i Profitti</h3>
+            <ul className="text-sm space-y-2 text-muted-foreground">
+              <li>• <strong>Mantieni fondi su più exchange</strong> - evita tempi di trasferimento</li>
+              <li>• <strong>Usa exchange centralizzati</strong> - commissioni più basse dei DEX</li>
+              <li>• <strong>Agisci velocemente</strong> - le opportunità spariscono rapidamente</li>
+              <li>• <strong>Verifica i livelli VIP</strong> - commissioni ridotte per volumi alti</li>
+              <li>• <strong>Monitora il gas fee</strong> - evita orari di congestione di rete</li>
+            </ul>
           </div>
         </div>
       </DialogContent>
@@ -214,7 +342,7 @@ function OpportunityCard({ opportunity }: { opportunity: ArbitrageOpportunity })
               </h3>
               {isHighProfit && (
                 <Badge variant="default" className="bg-primary text-primary-foreground" data-testid="badge-high-profit">
-                  High Profit
+                  Alto Profitto
                 </Badge>
               )}
             </div>
@@ -223,7 +351,7 @@ function OpportunityCard({ opportunity }: { opportunity: ArbitrageOpportunity })
                 {buyExchange?.type}
               </Badge>
               <span>•</span>
-              <span>{new Date(opportunity.timestamp).toLocaleTimeString()}</span>
+              <span>{new Date(opportunity.timestamp).toLocaleTimeString('it-IT')}</span>
             </div>
           </div>
           
@@ -241,7 +369,7 @@ function OpportunityCard({ opportunity }: { opportunity: ArbitrageOpportunity })
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
               <TrendingDown className="h-3 w-3" />
-              Buy From
+              Acquista Da
             </div>
             <div className="font-semibold" data-testid="text-buy-exchange">{buyExchange?.name}</div>
             <div className="font-mono text-sm text-primary" data-testid="text-buy-price">
@@ -252,7 +380,7 @@ function OpportunityCard({ opportunity }: { opportunity: ArbitrageOpportunity })
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
               <TrendingUp className="h-3 w-3" />
-              Sell To
+              Vendi A
             </div>
             <div className="font-semibold" data-testid="text-sell-exchange">{sellExchange?.name}</div>
             <div className="font-mono text-sm text-primary" data-testid="text-sell-price">
@@ -301,15 +429,15 @@ function ProfitCalculator() {
     <Card className="p-6 sticky top-6" data-testid="calculator-profit">
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-bold mb-2">Profit Calculator</h2>
+          <h2 className="text-xl font-bold mb-2">Calcolatore Profitti</h2>
           <p className="text-sm text-muted-foreground">
-            Calculate potential profits with your capital
+            Calcola potenziali profitti con il tuo capitale
           </p>
         </div>
 
         <div className="space-y-3">
           <label className="text-sm font-medium text-foreground">
-            Capital Amount (USD)
+            Capitale (USD)
           </label>
           <div className="relative">
             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -329,7 +457,7 @@ function ProfitCalculator() {
           <div className="space-y-4 rounded-lg bg-primary/5 border border-primary/20 p-4">
             <div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                Best Opportunity
+                Migliore Opportunità
               </div>
               <div className="font-mono font-semibold text-lg" data-testid="text-best-pair">
                 {bestOpportunity.pair}
@@ -341,18 +469,18 @@ function ProfitCalculator() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Your Capital</span>
+                <span className="text-muted-foreground">Tuo Capitale</span>
                 <span className="font-mono font-semibold">${capital.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Profit Rate</span>
+                <span className="text-muted-foreground">Percentuale Profitto</span>
                 <span className="font-mono font-semibold text-primary">
                   {bestOpportunity.netProfitPercentage.toFixed(2)}%
                 </span>
               </div>
               <div className="border-t border-border pt-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold">Estimated Profit</span>
+                  <span className="font-semibold">Profitto Stimato</span>
                   <span className="font-mono text-2xl font-bold text-primary" data-testid="text-estimated-profit">
                     ${estimatedProfit.toFixed(2)}
                   </span>
@@ -362,14 +490,14 @@ function ProfitCalculator() {
           </div>
         ) : (
           <div className="rounded-lg bg-muted/30 p-4 text-center text-sm text-muted-foreground">
-            No profitable opportunities available at the moment
+            Nessuna opportunità profittevole al momento
           </div>
         )}
 
         <div className="text-xs text-muted-foreground space-y-1">
-          <p>• Calculations based on best current opportunity</p>
-          <p>• Actual profits may vary due to market conditions</p>
-          <p>• Always verify prices before executing trades</p>
+          <p>• Calcoli basati sulla migliore opportunità attuale</p>
+          <p>• I profitti effettivi possono variare per condizioni di mercato</p>
+          <p>• Verifica sempre i prezzi prima di eseguire operazioni</p>
         </div>
       </div>
     </Card>
@@ -395,7 +523,7 @@ export default function Dashboard() {
 
     socket.onopen = () => {
       setIsConnected(true);
-      console.log("WebSocket connected");
+      console.log("WebSocket connesso");
     };
 
     socket.onmessage = (event) => {
@@ -406,17 +534,17 @@ export default function Dashboard() {
           refetch();
         }
       } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
+        console.error("Errore parsing messaggio WebSocket:", error);
       }
     };
 
     socket.onclose = () => {
       setIsConnected(false);
-      console.log("WebSocket disconnected");
+      console.log("WebSocket disconnesso");
     };
 
     socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.error("Errore WebSocket:", error);
       setIsConnected(false);
     };
 
@@ -454,7 +582,7 @@ export default function Dashboard() {
                 Crypto Arbitrage Finder
               </h1>
               <p className="text-sm text-muted-foreground">
-                Real-time opportunity scanner across multiple exchanges
+                Scanner opportunità in tempo reale su exchange multipli
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -467,7 +595,7 @@ export default function Dashboard() {
                 data-testid="button-refresh"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                Refresh
+                Aggiorna
               </Button>
             </div>
           </div>
@@ -479,7 +607,7 @@ export default function Dashboard() {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Total Opportunities</div>
+                <div className="text-sm text-muted-foreground mb-1">Opportunità Totali</div>
                 <div className="text-3xl font-bold font-mono" data-testid="text-total-opportunities">
                   {filteredOpportunities.length}
                 </div>
@@ -493,7 +621,7 @@ export default function Dashboard() {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Profitable</div>
+                <div className="text-sm text-muted-foreground mb-1">Profittevoli</div>
                 <div className="text-3xl font-bold font-mono text-primary" data-testid="text-profitable-count">
                   {profitableCount}
                 </div>
@@ -507,7 +635,7 @@ export default function Dashboard() {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Best Opportunity</div>
+                <div className="text-sm text-muted-foreground mb-1">Migliore Opportunità</div>
                 <div className="text-3xl font-bold font-mono text-primary" data-testid="text-best-opportunity">
                   {bestOpportunity ? `${bestOpportunity.netProfitPercentage.toFixed(2)}%` : '0%'}
                 </div>
@@ -522,7 +650,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-4 mb-6 flex-wrap">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Filters:</span>
+            <span className="text-sm font-medium">Filtri:</span>
           </div>
           
           <Select
@@ -530,12 +658,12 @@ export default function Dashboard() {
             onValueChange={(value) => setFilter({ ...filter, exchangeType: value as any })}
           >
             <SelectTrigger className="w-[180px]" data-testid="select-exchange-type">
-              <SelectValue placeholder="Exchange Type" />
+              <SelectValue placeholder="Tipo Exchange" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Exchanges</SelectItem>
-              <SelectItem value="CEX">Centralized (CEX)</SelectItem>
-              <SelectItem value="DEX">Decentralized (DEX)</SelectItem>
+              <SelectItem value="ALL">Tutti gli Exchange</SelectItem>
+              <SelectItem value="CEX">Centralizzati (CEX)</SelectItem>
+              <SelectItem value="DEX">Decentralizzati (DEX)</SelectItem>
             </SelectContent>
           </Select>
 
@@ -544,10 +672,10 @@ export default function Dashboard() {
             onValueChange={(value) => setFilter({ ...filter, minProfitPercentage: Number(value) })}
           >
             <SelectTrigger className="w-[180px]" data-testid="select-min-profit">
-              <SelectValue placeholder="Min Profit %" />
+              <SelectValue placeholder="Profitto Minimo %" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="0">All Profits</SelectItem>
+              <SelectItem value="0">Tutti i Profitti</SelectItem>
               <SelectItem value="0.5">&gt; 0.5%</SelectItem>
               <SelectItem value="1">&gt; 1%</SelectItem>
               <SelectItem value="2">&gt; 2%</SelectItem>
@@ -556,7 +684,7 @@ export default function Dashboard() {
           </Select>
 
           <div className="text-xs text-muted-foreground ml-auto">
-            Last update: {lastUpdate.toLocaleTimeString()}
+            Ultimo aggiornamento: {lastUpdate.toLocaleTimeString('it-IT')}
           </div>
         </div>
 
@@ -578,9 +706,9 @@ export default function Dashboard() {
               <Card className="p-12">
                 <div className="text-center">
                   <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Opportunities Found</h3>
+                  <h3 className="text-lg font-semibold mb-2">Nessuna Opportunità Trovata</h3>
                   <p className="text-sm text-muted-foreground">
-                    Adjust your filters or wait for new opportunities to appear
+                    Modifica i filtri o attendi che appaiano nuove opportunità
                   </p>
                 </div>
               </Card>
