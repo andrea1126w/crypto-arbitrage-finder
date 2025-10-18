@@ -79,6 +79,21 @@ export const SUPPORTED_PAIRS: CryptoPair[] = [
   { symbol: "MATIC/USDT", baseAsset: "MATIC", quoteAsset: "USDT", name: "Polygon" },
   { symbol: "DOT/USDT", baseAsset: "DOT", quoteAsset: "USDT", name: "Polkadot" },
   { symbol: "AVAX/USDT", baseAsset: "AVAX", quoteAsset: "USDT", name: "Avalanche" },
+  { symbol: "LINK/USDT", baseAsset: "LINK", quoteAsset: "USDT", name: "Chainlink" },
+  { symbol: "UNI/USDT", baseAsset: "UNI", quoteAsset: "USDT", name: "Uniswap" },
+  { symbol: "ATOM/USDT", baseAsset: "ATOM", quoteAsset: "USDT", name: "Cosmos" },
+  { symbol: "LTC/USDT", baseAsset: "LTC", quoteAsset: "USDT", name: "Litecoin" },
+  { symbol: "NEAR/USDT", baseAsset: "NEAR", quoteAsset: "USDT", name: "Near Protocol" },
+  { symbol: "APT/USDT", baseAsset: "APT", quoteAsset: "USDT", name: "Aptos" },
+  { symbol: "ARB/USDT", baseAsset: "ARB", quoteAsset: "USDT", name: "Arbitrum" },
+  { symbol: "OP/USDT", baseAsset: "OP", quoteAsset: "USDT", name: "Optimism" },
+  { symbol: "FTM/USDT", baseAsset: "FTM", quoteAsset: "USDT", name: "Fantom" },
+  { symbol: "ALGO/USDT", baseAsset: "ALGO", quoteAsset: "USDT", name: "Algorand" },
+  { symbol: "VET/USDT", baseAsset: "VET", quoteAsset: "USDT", name: "VeChain" },
+  { symbol: "ICP/USDT", baseAsset: "ICP", quoteAsset: "USDT", name: "Internet Computer" },
+  { symbol: "FIL/USDT", baseAsset: "FIL", quoteAsset: "USDT", name: "Filecoin" },
+  { symbol: "AAVE/USDT", baseAsset: "AAVE", quoteAsset: "USDT", name: "Aave" },
+  { symbol: "HBAR/USDT", baseAsset: "HBAR", quoteAsset: "USDT", name: "Hedera" },
 ];
 
 // Database Tables

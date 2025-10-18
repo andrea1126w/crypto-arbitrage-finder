@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import { ArrowUpDown, TrendingUp, TrendingDown, Activity, DollarSign, Filter, Re
 import type { ArbitrageOpportunity, OpportunityFilter } from "@shared/schema";
 import { SUPPORTED_EXCHANGES, SUPPORTED_PAIRS } from "@shared/schema";
 import { EXCHANGE_LINKS } from "@shared/exchangeLinks";
+import { useNotifications } from "@/hooks/useNotifications";
+import { NotificationSettings } from "@/components/NotificationSettings";
 
 function LiveStatusIndicator({ isConnected }: { isConnected: boolean }) {
   return (
@@ -511,6 +513,9 @@ export default function Dashboard() {
   });
   const [isConnected, setIsConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  
+  const { settings, permission, requestPermission, showNotification, updateSettings } = useNotifications();
+  const previousOpportunitiesRef = useRef<Set<string>>(new Set());
 
   const { data: opportunities = [], isLoading, refetch } = useQuery<ArbitrageOpportunity[]>({
     queryKey: ["/api/opportunities"],
@@ -553,6 +558,23 @@ export default function Dashboard() {
     };
   }, [refetch]);
 
+  // Check for new profitable opportunities and send notifications
+  useEffect(() => {
+    if (!opportunities.length) return;
+
+    const currentIds = new Set(opportunities.map(o => o.id));
+    const profitableOpportunities = opportunities.filter(o => o.netProfitUsd > 0);
+
+    profitableOpportunities.forEach(opp => {
+      // Only notify for new opportunities
+      if (!previousOpportunitiesRef.current.has(opp.id)) {
+        showNotification(opp.id, opp.pair, opp.netProfitPercentage, opp.netProfitUsd);
+      }
+    });
+
+    previousOpportunitiesRef.current = currentIds;
+  }, [opportunities, showNotification]);
+
   const filteredOpportunities = opportunities.filter(opp => {
     if (filter.minProfitPercentage && opp.netProfitPercentage < filter.minProfitPercentage) {
       return false;
@@ -587,6 +609,12 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-4">
               <LiveStatusIndicator isConnected={isConnected} />
+              <NotificationSettings
+                settings={settings}
+                permission={permission}
+                onRequestPermission={requestPermission}
+                onUpdateSettings={updateSettings}
+              />
               <Button
                 variant="outline"
                 size="sm"
