@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { pgTable, serial, varchar, real, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 
 export const exchangeSchema = z.object({
   id: z.string(),
@@ -78,3 +80,30 @@ export const SUPPORTED_PAIRS: CryptoPair[] = [
   { symbol: "DOT/USDT", baseAsset: "DOT", quoteAsset: "USDT", name: "Polkadot" },
   { symbol: "AVAX/USDT", baseAsset: "AVAX", quoteAsset: "USDT", name: "Avalanche" },
 ];
+
+// Database Tables
+export const opportunityHistory = pgTable("opportunity_history", {
+  id: serial("id").primaryKey(),
+  pair: varchar("pair", { length: 50 }).notNull(),
+  buyExchange: varchar("buy_exchange", { length: 50 }).notNull(),
+  sellExchange: varchar("sell_exchange", { length: 50 }).notNull(),
+  buyPrice: real("buy_price").notNull(),
+  sellPrice: real("sell_price").notNull(),
+  spreadPercentage: real("spread_percentage").notNull(),
+  grossProfitUsd: real("gross_profit_usd").notNull(),
+  tradingFees: real("trading_fees").notNull(),
+  networkFees: real("network_fees").notNull(),
+  slippage: real("slippage").notNull(),
+  netProfitUsd: real("net_profit_usd").notNull(),
+  netProfitPercentage: real("net_profit_percentage").notNull(),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  executed: boolean("executed").default(false),
+});
+
+export type OpportunityHistory = typeof opportunityHistory.$inferSelect;
+export type InsertOpportunityHistory = typeof opportunityHistory.$inferInsert;
+
+export const insertOpportunityHistorySchema = createInsertSchema(opportunityHistory).omit({
+  id: true,
+  timestamp: true,
+});

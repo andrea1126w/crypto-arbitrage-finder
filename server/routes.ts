@@ -35,6 +35,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/history", async (req, res) => {
+    try {
+      const { limit, startDate, endDate, pair, minProfit } = req.query;
+      
+      const options = {
+        limit: limit ? parseInt(limit as string) : 100,
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+        pair: pair as string | undefined,
+        minProfit: minProfit ? parseFloat(minProfit as string) : undefined,
+      };
+
+      const history = await storage.getOpportunityHistory(options);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching opportunity history:", error);
+      res.status(500).json({ error: "Failed to fetch opportunity history" });
+    }
+  });
+
+  app.get("/api/history/stats", async (req, res) => {
+    try {
+      const stats = await storage.getHistoryStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching history stats:", error);
+      res.status(500).json({ error: "Failed to fetch history stats" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
@@ -67,8 +97,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       storage.setOpportunities(opportunities);
       
-      const profitableCount = opportunities.filter(o => o.netProfitUsd > 0).length;
-      console.log(`Found ${opportunities.length} opportunities (${profitableCount} profitable)`);
+      // Save profitable opportunities to database history
+      const profitableOpportunities = opportunities.filter(o => o.netProfitUsd > 0);
+      for (const opp of profitableOpportunities) {
+        try {
+          await storage.saveOpportunityToHistory({
+            pair: opp.pair,
+            buyExchange: opp.buyExchange,
+            sellExchange: opp.sellExchange,
+            buyPrice: opp.buyPrice,
+            sellPrice: opp.sellPrice,
+            spreadPercentage: opp.spreadPercentage,
+            grossProfitUsd: opp.grossProfitUsd,
+            tradingFees: opp.tradingFees,
+            networkFees: opp.networkFees,
+            slippage: opp.slippage,
+            netProfitUsd: opp.netProfitUsd,
+            netProfitPercentage: opp.netProfitPercentage,
+            executed: false,
+          });
+        } catch (saveError) {
+          console.error('Error saving opportunity to history:', saveError);
+        }
+      }
+      
+      const profitableCount = profitableOpportunities.length;
+      console.log(`Found ${opportunities.length} opportunities (${profitableCount} profitable, saved to history)`);
 
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
