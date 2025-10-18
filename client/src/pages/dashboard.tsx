@@ -15,6 +15,8 @@ import { NotificationSettings } from "@/components/NotificationSettings";
 import { QuickConnect } from "@/components/QuickConnect";
 import { MultiStrategyCalculator } from "@/components/MultiStrategyCalculator";
 import { ExecuteTradeButton } from "@/components/ExecuteTradeButton";
+import { YieldFarmingPanel } from "@/components/YieldFarmingPanel";
+import { FlashLoanSimulator } from "@/components/FlashLoanSimulator";
 
 function LiveStatusIndicator({ isConnected }: { isConnected: boolean }) {
   return (
@@ -757,8 +759,10 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
             <ProfitCalculator />
+            <YieldFarmingPanel />
+            <FlashLoanSimulator />
           </div>
         </div>
       </div>
