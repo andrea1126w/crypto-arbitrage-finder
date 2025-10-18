@@ -1,4 +1,8 @@
 import type { ArbitrageOpportunity } from "@shared/schema";
+import { db } from "../db";
+import { exchangeCredentials } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { encrypt, decrypt } from "./encryptionService";
 
 interface ExchangeCredentials {
   apiKey: string;
@@ -28,16 +32,124 @@ interface TradeRequest {
 }
 
 export class TradingService {
-  private credentials: Map<string, ExchangeCredentials> = new Map();
+  // Cache in-memory per performance (sincronizzato con database)
+  private credentialsCache: Map<string, ExchangeCredentials> = new Map();
 
-  // Salva credenziali exchange (in produzione: encrypted storage)
-  setExchangeCredentials(exchange: string, apiKey: string, apiSecret: string) {
-    this.credentials.set(exchange.toLowerCase(), { apiKey, apiSecret });
+  // Salva credenziali exchange in database (encrypted)
+  async setExchangeCredentials(exchange: string, apiKey: string, apiSecret: string) {
+    try {
+      const normalizedExchange = exchange.toLowerCase();
+      
+      // Encrypt API credentials before storing
+      const encryptedApiKey = encrypt(apiKey);
+      const encryptedApiSecret = encrypt(apiSecret);
+
+      // Check if credentials already exist
+      const existing = await db
+        .select()
+        .from(exchangeCredentials)
+        .where(eq(exchangeCredentials.exchange, normalizedExchange))
+        .limit(1);
+
+      if (existing.length > 0) {
+        // Update existing credentials
+        await db
+          .update(exchangeCredentials)
+          .set({
+            apiKey: encryptedApiKey,
+            apiSecret: encryptedApiSecret,
+            updatedAt: new Date(),
+          })
+          .where(eq(exchangeCredentials.exchange, normalizedExchange));
+      } else {
+        // Insert new credentials
+        await db.insert(exchangeCredentials).values({
+          exchange: normalizedExchange,
+          apiKey: encryptedApiKey,
+          apiSecret: encryptedApiSecret,
+        });
+      }
+
+      // Update cache
+      this.credentialsCache.set(normalizedExchange, { apiKey, apiSecret });
+
+      console.log(`✅ Credentials saved for ${exchange} (encrypted in database)`);
+    } catch (error) {
+      console.error(`Error saving credentials for ${exchange}:`, error);
+      throw new Error('Failed to save credentials');
+    }
   }
 
   // Verifica se exchange ha credenziali configurate
-  hasCredentials(exchange: string): boolean {
-    return this.credentials.has(exchange.toLowerCase());
+  async hasCredentials(exchange: string): Promise<boolean> {
+    const normalizedExchange = exchange.toLowerCase();
+    
+    // Check cache first
+    if (this.credentialsCache.has(normalizedExchange)) {
+      return true;
+    }
+
+    // Check database
+    try {
+      const result = await db
+        .select()
+        .from(exchangeCredentials)
+        .where(eq(exchangeCredentials.exchange, normalizedExchange))
+        .limit(1);
+
+      if (result.length > 0) {
+        // Load into cache
+        await this.loadCredentialsToCache(normalizedExchange);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error(`Error checking credentials for ${exchange}:`, error);
+      return false;
+    }
+  }
+
+  // Carica credenziali dal database alla cache (decrypted)
+  private async loadCredentialsToCache(exchange: string) {
+    try {
+      const result = await db
+        .select()
+        .from(exchangeCredentials)
+        .where(eq(exchangeCredentials.exchange, exchange))
+        .limit(1);
+
+      if (result.length > 0) {
+        const creds = result[0];
+        const decryptedApiKey = decrypt(creds.apiKey);
+        const decryptedApiSecret = decrypt(creds.apiSecret);
+
+        this.credentialsCache.set(exchange, {
+          apiKey: decryptedApiKey,
+          apiSecret: decryptedApiSecret,
+        });
+      }
+    } catch (error) {
+      console.error(`Error loading credentials for ${exchange}:`, error);
+      throw new Error('Failed to load credentials');
+    }
+  }
+
+  // Ottieni credenziali per exchange (da cache o database)
+  private async getCredentials(exchange: string): Promise<ExchangeCredentials | null> {
+    const normalizedExchange = exchange.toLowerCase();
+
+    // Check cache first
+    if (this.credentialsCache.has(normalizedExchange)) {
+      return this.credentialsCache.get(normalizedExchange)!;
+    }
+
+    // Load from database
+    if (await this.hasCredentials(normalizedExchange)) {
+      return this.credentialsCache.get(normalizedExchange)!;
+    }
+
+    return null;
   }
 
   // Esegui trade di arbitraggio
@@ -45,14 +157,16 @@ export class TradingService {
     const { buyExchange, sellExchange, pair, amount, buyPrice, sellPrice, capital } = request;
 
     // Verifica credenziali
-    if (!this.hasCredentials(buyExchange)) {
+    const hasBuyCredentials = await this.hasCredentials(buyExchange);
+    if (!hasBuyCredentials) {
       return {
         success: false,
         message: `Credenziali mancanti per ${buyExchange}. Connetti l'exchange prima.`,
       };
     }
 
-    if (!this.hasCredentials(sellExchange)) {
+    const hasSellCredentials = await this.hasCredentials(sellExchange);
+    if (!hasSellCredentials) {
       return {
         success: false,
         message: `Credenziali mancanti per ${sellExchange}. Connetti l'exchange prima.`,
@@ -116,7 +230,7 @@ export class TradingService {
 
   // Esegui ordine di acquisto su exchange
   private async executeBuyOrder(exchange: string, pair: string, amount: number, price: number) {
-    const credentials = this.credentials.get(exchange.toLowerCase());
+    const credentials = await this.getCredentials(exchange);
     if (!credentials) {
       return { success: false, error: "Credenziali non trovate" };
     }
@@ -143,7 +257,7 @@ export class TradingService {
 
   // Esegui ordine di vendita su exchange
   private async executeSellOrder(exchange: string, pair: string, amount: number, price: number) {
-    const credentials = this.credentials.get(exchange.toLowerCase());
+    const credentials = await this.getCredentials(exchange);
     if (!credentials) {
       return { success: false, error: "Credenziali non trovate" };
     }
@@ -169,7 +283,8 @@ export class TradingService {
 
   // Ottieni saldo disponibile su exchange
   async getBalance(exchange: string, asset: string): Promise<number> {
-    if (!this.hasCredentials(exchange)) {
+    const hasCredentials = await this.hasCredentials(exchange);
+    if (!hasCredentials) {
       throw new Error(`Credenziali mancanti per ${exchange}`);
     }
 

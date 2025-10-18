@@ -112,11 +112,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      tradingService.setExchangeCredentials(exchange, apiKey, apiSecret);
+      await tradingService.setExchangeCredentials(exchange, apiKey, apiSecret);
 
       res.json({ 
         success: true,
-        message: `${exchange} connesso con successo`,
+        message: `${exchange} connesso con successo - credenziali salvate in modo sicuro`,
       });
     } catch (error: any) {
       console.error("Error connecting exchange:", error);

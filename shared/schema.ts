@@ -122,3 +122,16 @@ export const insertOpportunityHistorySchema = createInsertSchema(opportunityHist
   id: true,
   timestamp: true,
 });
+
+// Exchange Credentials (encrypted storage)
+export const exchangeCredentials = pgTable("exchange_credentials", {
+  id: serial("id").primaryKey(),
+  exchange: varchar("exchange", { length: 50 }).notNull(),
+  apiKey: varchar("api_key", { length: 500 }).notNull(), // Encrypted
+  apiSecret: varchar("api_secret", { length: 500 }).notNull(), // Encrypted
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type ExchangeCredentials = typeof exchangeCredentials.$inferSelect;
+export type InsertExchangeCredentials = typeof exchangeCredentials.$inferInsert;
