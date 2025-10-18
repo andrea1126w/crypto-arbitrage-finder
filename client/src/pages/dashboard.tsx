@@ -12,6 +12,8 @@ import { SUPPORTED_EXCHANGES, SUPPORTED_PAIRS } from "@shared/schema";
 import { EXCHANGE_LINKS } from "@shared/exchangeLinks";
 import { useNotifications } from "@/hooks/useNotifications";
 import { NotificationSettings } from "@/components/NotificationSettings";
+import { QuickConnect } from "@/components/QuickConnect";
+import { MultiStrategyCalculator } from "@/components/MultiStrategyCalculator";
 
 function LiveStatusIndicator({ isConnected }: { isConnected: boolean }) {
   return (
@@ -607,8 +609,10 @@ export default function Dashboard() {
                 Scanner opportunità in tempo reale su exchange multipli
               </p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 flex-wrap">
               <LiveStatusIndicator isConnected={isConnected} />
+              <QuickConnect />
+              <MultiStrategyCalculator />
               <NotificationSettings
                 settings={settings}
                 permission={permission}
