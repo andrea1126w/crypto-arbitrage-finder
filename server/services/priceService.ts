@@ -12,6 +12,21 @@ const COINGECKO_IDS: Record<string, string> = {
   'MATIC': 'polygon-ecosystem-token',
   'DOT': 'polkadot',
   'AVAX': 'avalanche-2',
+  'LINK': 'chainlink',
+  'UNI': 'uniswap',
+  'ATOM': 'cosmos',
+  'LTC': 'litecoin',
+  'NEAR': 'near',
+  'APT': 'aptos',
+  'ARB': 'arbitrum',
+  'OP': 'optimism',
+  'FTM': 'fantom',
+  'ALGO': 'algorand',
+  'VET': 'vechain',
+  'ICP': 'internet-computer',
+  'FIL': 'filecoin',
+  'AAVE': 'aave',
+  'HBAR': 'hedera-hashgraph',
 };
 
 export class PriceService {
