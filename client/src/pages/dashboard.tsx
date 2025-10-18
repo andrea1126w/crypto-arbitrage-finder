@@ -14,6 +14,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { QuickConnect } from "@/components/QuickConnect";
 import { MultiStrategyCalculator } from "@/components/MultiStrategyCalculator";
+import { ExecuteTradeButton } from "@/components/ExecuteTradeButton";
 
 function LiveStatusIndicator({ isConnected }: { isConnected: boolean }) {
   return (
@@ -409,7 +410,10 @@ function OpportunityCard({ opportunity }: { opportunity: ArbitrageOpportunity })
           />
         </div>
 
-        <ExecutionGuideModal opportunity={opportunity} />
+        <div className="flex gap-2 flex-wrap">
+          <ExecuteTradeButton opportunity={opportunity} hasApiKeys={false} />
+          <ExecutionGuideModal opportunity={opportunity} />
+        </div>
       </div>
     </Card>
   );

@@ -30,7 +30,7 @@ export function QuickConnect() {
     { id: "metamask", name: "MetaMask", balance: 0, status: "disconnected" },
   ]);
 
-  const handleConnectExchange = (exchangeId: string, apiKey: string, apiSecret: string) => {
+  const handleConnectExchange = async (exchangeId: string, apiKey: string, apiSecret: string) => {
     if (!apiKey || !apiSecret) {
       toast({
         title: "Errore",
@@ -40,18 +40,42 @@ export function QuickConnect() {
       return;
     }
 
-    setConnectedExchanges(prev =>
-      prev.map(ex =>
-        ex.id === exchangeId
-          ? { ...ex, status: "connected", balance: Math.random() * 100 + 50 }
-          : ex
-      )
-    );
+    try {
+      const response = await fetch("/api/connect-exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exchange: exchangeId, apiKey, apiSecret }),
+      });
 
-    toast({
-      title: "✅ Connesso con successo!",
-      description: `${exchangeId.toUpperCase()} è ora connesso e pronto per il trading`,
-    });
+      const result = await response.json();
+
+      if (result.success) {
+        setConnectedExchanges(prev =>
+          prev.map(ex =>
+            ex.id === exchangeId
+              ? { ...ex, status: "connected", balance: Math.random() * 100 + 50 }
+              : ex
+          )
+        );
+
+        toast({
+          title: "✅ Connesso con successo!",
+          description: result.message || `${exchangeId.toUpperCase()} è ora connesso e pronto per il trading`,
+        });
+      } else {
+        toast({
+          title: "❌ Connessione Fallita",
+          description: result.message || "Errore durante la connessione",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "❌ Errore",
+        description: "Impossibile connettersi all'exchange",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleConnectMetaMask = async () => {

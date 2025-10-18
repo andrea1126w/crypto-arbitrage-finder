@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { priceService } from "./services/priceService";
 import { arbitrageEngine } from "./services/arbitrageEngine";
 import { SUPPORTED_EXCHANGES, SUPPORTED_PAIRS } from "@shared/schema";
+import { tradingService } from "./services/tradingService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/opportunities", async (req, res) => {
@@ -62,6 +63,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching history stats:", error);
       res.status(500).json({ error: "Failed to fetch history stats" });
+    }
+  });
+
+  // Execute arbitrage trade
+  app.post("/api/execute-trade", async (req, res) => {
+    try {
+      const { opportunityId, pair, buyExchange, sellExchange, buyPrice, sellPrice, amount, capital } = req.body;
+
+      if (!pair || !buyExchange || !sellExchange || !amount) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Parametri mancanti: pair, buyExchange, sellExchange, amount richiesti" 
+        });
+      }
+
+      const result = await tradingService.executeTrade({
+        opportunityId,
+        pair,
+        buyExchange,
+        sellExchange,
+        buyPrice,
+        sellPrice,
+        amount,
+        capital: capital || 100,
+      });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error executing trade:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Errore durante l'esecuzione del trade",
+        errors: [error.message],
+      });
+    }
+  });
+
+  // Connect exchange (save API credentials)
+  app.post("/api/connect-exchange", async (req, res) => {
+    try {
+      const { exchange, apiKey, apiSecret } = req.body;
+
+      if (!exchange || !apiKey || !apiSecret) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Parametri mancanti: exchange, apiKey, apiSecret richiesti" 
+        });
+      }
+
+      tradingService.setExchangeCredentials(exchange, apiKey, apiSecret);
+
+      res.json({ 
+        success: true,
+        message: `${exchange} connesso con successo`,
+      });
+    } catch (error: any) {
+      console.error("Error connecting exchange:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Errore durante la connessione",
+      });
     }
   });
 
