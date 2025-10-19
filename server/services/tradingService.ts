@@ -375,7 +375,7 @@ export class TradingService {
     }
 
     const baseUrl = "https://api.kucoin.com";
-    const endpoint = `/api/v1/accounts?currency=${asset.toUpperCase()}&type=trade`;
+    const endpoint = `/api/v1/accounts`;
     const method = "GET";
     const timestamp = Date.now().toString();
 
@@ -388,15 +388,17 @@ export class TradingService {
       .update(prehash)
       .digest("base64");
 
-    // Encrypt passphrase
+    console.log(`🔍 KuCoin Debug: API Key=${credentials.apiKey.slice(0, 10)}..., Passphrase="${passphrase}"`);
+
+    // Try API Version 2 first (encrypted passphrase)
     const encryptedPassphrase = crypto
       .createHmac("sha256", apiSecret)
       .update(passphrase)
       .digest("base64");
 
-    // Chiamata API
+    // Chiamata API con Version 2
     const url = `${baseUrl}${endpoint}`;
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       headers: {
         "KC-API-KEY": credentials.apiKey,
         "KC-API-SIGN": signature,
@@ -407,15 +409,42 @@ export class TradingService {
       },
     });
 
+    // Se Version 2 fallisce, prova Version 1 (passphrase non encrypted)
+    if (!response.ok) {
+      const errorV2 = await response.text();
+      console.log(`⚠️ KuCoin API v2 failed, trying v1... Error: ${errorV2}`);
+      
+      response = await fetch(url, {
+        headers: {
+          "KC-API-KEY": credentials.apiKey,
+          "KC-API-SIGN": signature,
+          "KC-API-TIMESTAMP": timestamp,
+          "KC-API-PASSPHRASE": passphrase, // Plain text per v1
+          "Content-Type": "application/json",
+        },
+      });
+    }
+
     if (!response.ok) {
       const error = await response.text();
+      console.error(`❌ KuCoin API Response: ${error}`);
       throw new Error(`KuCoin API error: ${error}`);
     }
 
     const data = await response.json();
+    
+    console.log(`📊 KuCoin Response:`, JSON.stringify(data).slice(0, 200));
 
-    // Somma tutti i balance disponibili per quell'asset
-    const totalBalance = data.data.reduce((sum: number, acc: any) => {
+    if (data.code !== "200000") {
+      throw new Error(`KuCoin error: ${data.msg || 'Unknown error'}`);
+    }
+
+    // Filtra per asset richiesto e somma tutti i balance (trade + main)
+    const assetAccounts = data.data.filter((acc: any) => 
+      acc.currency === asset.toUpperCase()
+    );
+    
+    const totalBalance = assetAccounts.reduce((sum: number, acc: any) => {
       return sum + parseFloat(acc.available || "0");
     }, 0);
 
