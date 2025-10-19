@@ -293,8 +293,8 @@ export class TradingService {
     const normalizedExchange = exchange.toLowerCase();
 
     try {
-      if (normalizedExchange === "binance") {
-        return await this.getBinanceBalance(asset);
+      if (normalizedExchange === "bybit") {
+        return await this.getBybitBalance(asset);
       } else if (normalizedExchange === "kucoin") {
         return await this.getKuCoinBalance(asset);
       } else {
@@ -308,44 +308,53 @@ export class TradingService {
     }
   }
 
-  // Chiamata API REALE Binance
-  private async getBinanceBalance(asset: string): Promise<number> {
-    const credentials = await this.getCredentials("binance");
+  // Chiamata API REALE Bybit
+  private async getBybitBalance(asset: string): Promise<number> {
+    const credentials = await this.getCredentials("bybit");
     if (!credentials) {
-      throw new Error("Credenziali Binance non trovate");
+      throw new Error("Credenziali Bybit non trovate");
     }
 
-    const baseUrl = "https://api.binance.com";
-    const endpoint = "/api/v3/account";
+    const baseUrl = "https://api.bybit.com";
+    const endpoint = "/v5/account/wallet-balance";
     const timestamp = Date.now();
-    const queryString = `timestamp=${timestamp}&recvWindow=5000`;
+    const recvWindow = 5000;
 
+    // Bybit richiede parametri ordinati alfabeticamente per la signature
+    const params = `accountType=UNIFIED&api_key=${credentials.apiKey}&recv_window=${recvWindow}&timestamp=${timestamp}`;
+    
     // Genera signature HMAC-SHA256
     const signature = crypto
       .createHmac("sha256", credentials.apiSecret)
-      .update(queryString)
+      .update(params)
       .digest("hex");
 
     // Chiamata API
-    const url = `${baseUrl}${endpoint}?${queryString}&signature=${signature}`;
+    const url = `${baseUrl}${endpoint}?${params}&sign=${signature}`;
     const response = await fetch(url, {
       headers: {
-        "X-MBX-APIKEY": credentials.apiKey,
+        "X-BAPI-API-KEY": credentials.apiKey,
+        "X-BAPI-TIMESTAMP": timestamp.toString(),
+        "X-BAPI-SIGN": signature,
       },
     });
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Binance API error: ${error}`);
+      throw new Error(`Bybit API error: ${error}`);
     }
 
     const data = await response.json();
     
+    if (data.retCode !== 0) {
+      throw new Error(`Bybit error: ${data.retMsg}`);
+    }
+    
     // Trova il balance dell'asset richiesto
-    const balanceObj = data.balances.find((b: any) => b.asset === asset.toUpperCase());
-    const balance = balanceObj ? parseFloat(balanceObj.free) : 0;
+    const coinData = data.result?.list?.[0]?.coin?.find((c: any) => c.coin === asset.toUpperCase());
+    const balance = coinData ? parseFloat(coinData.walletBalance) : 0;
 
-    console.log(`✅ Binance ${asset}: $${balance.toFixed(2)}`);
+    console.log(`✅ Bybit ${asset}: $${balance.toFixed(2)}`);
     return balance;
   }
 

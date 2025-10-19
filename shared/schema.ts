@@ -59,11 +59,10 @@ export type ArbitrageOpportunity = z.infer<typeof arbitrageOpportunitySchema>;
 export type OpportunityFilter = z.infer<typeof opportunityFilterSchema>;
 
 export const SUPPORTED_EXCHANGES: Exchange[] = [
-  { id: "binance", name: "Binance", type: "CEX", tradingFee: 0.1 },
+  { id: "bybit", name: "Bybit", type: "CEX", tradingFee: 0.1 },
+  { id: "kucoin", name: "KuCoin", type: "CEX", tradingFee: 0.1 },
   { id: "coinbase", name: "Coinbase", type: "CEX", tradingFee: 0.5 },
   { id: "kraken", name: "Kraken", type: "CEX", tradingFee: 0.26 },
-  { id: "kucoin", name: "KuCoin", type: "CEX", tradingFee: 0.1 },
-  { id: "bybit", name: "Bybit", type: "CEX", tradingFee: 0.1 },
   { id: "uniswap", name: "Uniswap", type: "DEX", tradingFee: 0.3, networkFees: 15 },
   { id: "pancakeswap", name: "PancakeSwap", type: "DEX", tradingFee: 0.25, networkFees: 2 },
 ];

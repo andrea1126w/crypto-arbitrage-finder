@@ -18,9 +18,9 @@ interface StakingPosition {
 export function YieldFarmingPanel() {
   const [isEnabled, setIsEnabled] = useState(false);
   const [positions, setPositions] = useState<StakingPosition[]>([
-    { asset: "BTC", amount: 0.002, apy: 5, dailyEarnings: 0.00027, platform: "Binance Earn", autoCompound: true },
-    { asset: "ETH", amount: 0.05, apy: 6.5, dailyEarnings: 0.0089, platform: "Binance Earn", autoCompound: true },
-    { asset: "USDT", amount: 50, apy: 8, dailyEarnings: 0.011, platform: "Binance Earn", autoCompound: false },
+    { asset: "BTC", amount: 0.002, apy: 5, dailyEarnings: 0.00027, platform: "Bybit Earn", autoCompound: true },
+    { asset: "ETH", amount: 0.05, apy: 6.5, dailyEarnings: 0.0089, platform: "Bybit Earn", autoCompound: true },
+    { asset: "USDT", amount: 50, apy: 8, dailyEarnings: 0.011, platform: "Bybit Earn", autoCompound: false },
   ]);
 
   const totalDailyEarnings = positions.reduce((sum, p) => sum + (p.dailyEarnings * (p.amount > 0 ? 1 : 0)), 0);

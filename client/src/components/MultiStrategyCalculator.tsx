@@ -293,7 +293,7 @@ export function MultiStrategyCalculator() {
               </p>
             </div>
             <ol className="text-xs text-muted-foreground space-y-1 ml-7 list-decimal">
-              <li>Clicca "Connessione Rapida" e connetti Binance + MetaMask</li>
+              <li>Clicca "Connessione Rapida" e connetti Bybit + MetaMask</li>
               <li>Abilita "Yield Farming Automatico" nelle impostazioni</li>
               <li>Attiva "Flash Loan Mode" (richiede capitale ≥$50)</li>
               <li>Sistema gestisce tutto automaticamente - tu raccogli profitti!</li>

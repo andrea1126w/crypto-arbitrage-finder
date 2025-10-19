@@ -89,11 +89,10 @@ export class PriceService {
 
   private getExchangeVariance(exchangeId: string): number {
     const variances: Record<string, number> = {
-      'binance': 0.0,
+      'bybit': 0.0,
       'coinbase': 0.008,
       'kraken': -0.006,
       'kucoin': 0.004,
-      'bybit': 0.005,
       'uniswap': 0.012,
       'pancakeswap': 0.010,
     };

@@ -299,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/rebalance/status", async (req, res) => {
     try {
       const balances = [];
-      const exchangesToCheck = ['binance', 'kucoin', 'kraken', 'coinbase', 'bybit'];
+      const exchangesToCheck = ['bybit', 'kucoin', 'kraken', 'coinbase'];
       const asset = 'USDT'; // Asset da controllare
 
       for (const exchange of exchangesToCheck) {
@@ -345,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         message: "Analisi completata - distribuzione ottimale calcolata",
         recommendations: [
-          "Ribilancia il 15% del capitale da Binance a KuCoin",
+          "Ribilancia il 15% del capitale da Bybit a KuCoin",
           "Aumenta liquidità su Kraken del 10%",
         ],
       });

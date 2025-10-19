@@ -7,14 +7,14 @@ export const EXCHANGE_LINKS: Record<string, {
   depositGuide: string;
   withdrawGuide: string;
 }> = {
-  binance: {
-    name: "Binance",
-    homepage: "https://www.binance.com",
-    register: "https://accounts.binance.com/register",
-    login: "https://accounts.binance.com/login",
-    tradingUrl: (pair) => `https://www.binance.com/it/trade/${pair.replace('/', '_')}`,
-    depositGuide: "https://www.binance.com/it/support/faq/115003764971",
-    withdrawGuide: "https://www.binance.com/it/support/faq/115003736451",
+  bybit: {
+    name: "Bybit",
+    homepage: "https://www.bybit.com",
+    register: "https://www.bybit.com/register",
+    login: "https://www.bybit.com/login",
+    tradingUrl: (pair) => `https://www.bybit.com/trade/spot/${pair.replace('/', '')}`,
+    depositGuide: "https://learn.bybit.com/bybit-guide/how-to-deposit-crypto-on-bybit/",
+    withdrawGuide: "https://learn.bybit.com/bybit-guide/how-to-withdraw-crypto-from-bybit/",
   },
   coinbase: {
     name: "Coinbase",
@@ -42,15 +42,6 @@ export const EXCHANGE_LINKS: Record<string, {
     tradingUrl: (pair) => `https://www.kucoin.com/trade/${pair.replace('/', '-')}`,
     depositGuide: "https://www.kucoin.com/support/360015102174",
     withdrawGuide: "https://www.kucoin.com/support/360015102254",
-  },
-  bybit: {
-    name: "Bybit",
-    homepage: "https://www.bybit.com",
-    register: "https://www.bybit.com/register",
-    login: "https://www.bybit.com/login",
-    tradingUrl: (pair) => `https://www.bybit.com/trade/spot/${pair.replace('/', '')}`,
-    depositGuide: "https://learn.bybit.com/bybit-guide/how-to-deposit-crypto-on-bybit/",
-    withdrawGuide: "https://learn.bybit.com/bybit-guide/how-to-withdraw-crypto-from-bybit/",
   },
   uniswap: {
     name: "Uniswap",

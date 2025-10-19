@@ -24,8 +24,9 @@ The application features a dark mode fintech aesthetic inspired by platforms lik
 The system is built with a React and TypeScript frontend, an Express and Node.js backend, and a PostgreSQL database. Real-time data updates are handled via WebSocket, pushing price information every 30 seconds.
 
 **Exchange API Integration Status:**
+-   **Bybit**: ✅ Implemented with HMAC-SHA256 authentication - API V5 unified account endpoint
 -   **KuCoin**: ✅ Fully functional - Real API calls working with HMAC-SHA256 authentication
--   **Binance**: ❌ Blocked on Replit servers due to geographic restrictions ("Service unavailable from a restricted location")
+-   **Binance**: ❌ Removed (blocked on Replit servers due to geographic restrictions - replaced with Bybit)
 -   **Auto-Save Credentials**: Implemented with 2-second debounce - credentials automatically saved as user types
 -   **Encryption**: AES-256-GCM encryption for all API keys stored in PostgreSQL database
 -   **Real Balance Tracking**: `/api/rebalance/status` endpoint fetches actual account balances from connected exchanges
@@ -37,7 +38,7 @@ The system is built with a React and TypeScript frontend, an Express and Node.js
 -   **AI Price Predictions**: ML forecasting engine for time series analysis, pattern detection, and sentiment analysis, providing smart entry/exit signals and confidence scores for 1h, 4h, and 24h forecasts.
 -   **Auto-Rebalancing**: Optimizes capital allocation dynamically, tracks multi-exchange balances, and manages liquidity.
 -   **One-Click Trading System**: Allows for automatic trade execution with prior confirmation, supporting both demo and real trading modes.
--   **QuickConnect Exchange**: Facilitates rapid connection to Binance, KuCoin, and MetaMask, with secure credential management.
+-   **QuickConnect Exchange**: Facilitates rapid connection to Bybit, KuCoin, and MetaMask, with secure credential management and auto-save functionality.
 -   **Yield Farming Dashboard**: Tracks APY for staking positions (BTC/ETH/USDT) with auto-compound options.
 -   **Flash Loan Simulator**: Simulates arbitrage opportunities using borrowed capital, including fee calculations and step-by-step execution guides.
 -   **Multi-Strategy Calculator**: Provides combined profit projections from arbitrage, yield farming, and flash loans.
@@ -52,11 +53,10 @@ The system is built with a React and TypeScript frontend, an Express and Node.js
 
 ## External Dependencies
 -   **CoinGecko API**: Used for fetching real-time cryptocurrency price data.
--   **Binance**: Centralized Exchange (CEX) integration for trading.
--   **KuCoin**: Centralized Exchange (CEX) integration for trading.
--   **Kraken**: Centralized Exchange (CEX) integration for trading.
--   **Coinbase**: Centralized Exchange (CEX) integration for trading.
--   **Bybit**: Centralized Exchange (CEX) integration for trading.
+-   **Bybit**: ✅ Centralized Exchange (CEX) - Fully integrated with API V5 for balance tracking and trading.
+-   **KuCoin**: ✅ Centralized Exchange (CEX) - Fully integrated for balance tracking and trading.
+-   **Kraken**: Centralized Exchange (CEX) - Placeholder (not yet integrated).
+-   **Coinbase**: Centralized Exchange (CEX) - Placeholder (not yet integrated).
 -   **Uniswap**: Decentralized Exchange (DEX) integration for trading.
 -   **PancakeSwap**: Decentralized Exchange (DEX) integration for trading.
 -   **MetaMask**: Wallet integration for Web3 interactions, primarily with DEXes.

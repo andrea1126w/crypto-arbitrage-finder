@@ -25,14 +25,14 @@ interface ConnectedExchange {
 export function QuickConnect() {
   const { toast } = useToast();
   const [connectedExchanges, setConnectedExchanges] = useState<ConnectedExchange[]>([
-    { id: "binance", name: "Binance", balance: 0, status: "disconnected" },
+    { id: "bybit", name: "Bybit", balance: 0, status: "disconnected" },
     { id: "kucoin", name: "KuCoin", balance: 0, status: "disconnected" },
     { id: "metamask", name: "MetaMask", balance: 0, status: "disconnected" },
   ]);
 
   // Auto-save states
-  const [binanceKey, setBinanceKey] = useState("");
-  const [binanceSecret, setBinanceSecret] = useState("");
+  const [bybitKey, setBybitKey] = useState("");
+  const [bybitSecret, setBybitSecret] = useState("");
   const [kucoinKey, setKucoinKey] = useState("");
   const [kucoinSecret, setKucoinSecret] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -77,15 +77,15 @@ export function QuickConnect() {
     }
   };
 
-  // Debounced auto-save per Binance
+  // Debounced auto-save per Bybit
   useEffect(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    if (binanceKey && binanceSecret) {
+    if (bybitKey && bybitSecret) {
       saveTimeoutRef.current = setTimeout(() => {
-        autoSave("binance", binanceKey, binanceSecret);
+        autoSave("bybit", bybitKey, bybitSecret);
       }, 2000); // 2 secondi di debounce
     }
 
@@ -94,7 +94,7 @@ export function QuickConnect() {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [binanceKey, binanceSecret]);
+  }, [bybitKey, bybitSecret]);
 
   // Debounced auto-save per KuCoin
   useEffect(() => {
@@ -242,10 +242,10 @@ export function QuickConnect() {
             </Card>
           </div>
 
-          <Tabs defaultValue="binance" className="w-full">
+          <Tabs defaultValue="bybit" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="binance" className="gap-2">
-                Binance
+              <TabsTrigger value="bybit" className="gap-2">
+                Bybit
                 {connectedExchanges[0].status === "connected" && (
                   <Badge variant="default" className="h-2 w-2 p-0 rounded-full bg-green-500" />
                 )}
@@ -264,18 +264,18 @@ export function QuickConnect() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="binance" className="space-y-4 mt-4">
+            <TabsContent value="bybit" className="space-y-4 mt-4">
               <ExchangeSetup
-                exchangeId="binance"
-                name="Binance"
-                icon="🟡"
+                exchangeId="bybit"
+                name="Bybit"
+                icon="🔵"
                 status={connectedExchanges[0].status}
                 balance={connectedExchanges[0].balance}
                 onConnect={handleConnectExchange}
-                apiKey={binanceKey}
-                apiSecret={binanceSecret}
-                onApiKeyChange={setBinanceKey}
-                onApiSecretChange={setBinanceSecret}
+                apiKey={bybitKey}
+                apiSecret={bybitSecret}
+                onApiKeyChange={setBybitKey}
+                onApiSecretChange={setBybitSecret}
                 isSaving={isSaving}
               />
             </TabsContent>
@@ -388,8 +388,8 @@ function ExchangeSetup({
   isSaving 
 }: ExchangeSetupProps) {
 
-  const apiGuideUrl = exchangeId === "binance"
-    ? "https://www.binance.com/en/support/faq/how-to-create-api-360002502072"
+  const apiGuideUrl = exchangeId === "bybit"
+    ? "https://www.bybit.com/en/help-center/article/How-to-Create-a-New-API-Key"
     : "https://www.kucoin.com/support/360015102174-How-to-Create-an-API";
 
   return (
