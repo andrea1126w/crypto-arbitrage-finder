@@ -641,6 +641,69 @@ export default function Dashboard() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Quick Stats Widget PRO Features */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          <Card className="p-4 hover-elevate cursor-pointer" onClick={() => window.location.href = '/bot'}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Activity className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-muted-foreground">Trading Bot</div>
+                <div className="font-semibold text-sm truncate">Auto-Trading</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 hover-elevate cursor-pointer" onClick={() => window.location.href = '/analytics'}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-muted-foreground">Analytics Pro</div>
+                <div className="font-semibold text-sm truncate">Metriche</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 hover-elevate cursor-pointer" onClick={() => window.location.href = '/ai'}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Activity className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-muted-foreground">AI Predictions</div>
+                <div className="font-semibold text-sm truncate">ML Forecast</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 hover-elevate cursor-pointer" onClick={() => window.location.href = '/alerts'}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-muted-foreground">Alerts</div>
+                <div className="font-semibold text-sm truncate">Notifiche</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 hover-elevate cursor-pointer" onClick={() => window.location.href = '/rebalancing'}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-muted-foreground">Rebalancing</div>
+                <div className="font-semibold text-sm truncate">Optimizer</div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="p-6">
             <div className="flex items-center justify-between">
