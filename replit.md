@@ -23,6 +23,13 @@ The application features a dark mode fintech aesthetic inspired by platforms lik
 ### Technical Implementations
 The system is built with a React and TypeScript frontend, an Express and Node.js backend, and a PostgreSQL database. Real-time data updates are handled via WebSocket, pushing price information every 30 seconds.
 
+**Exchange API Integration Status:**
+-   **KuCoin**: ✅ Fully functional - Real API calls working with HMAC-SHA256 authentication
+-   **Binance**: ❌ Blocked on Replit servers due to geographic restrictions ("Service unavailable from a restricted location")
+-   **Auto-Save Credentials**: Implemented with 2-second debounce - credentials automatically saved as user types
+-   **Encryption**: AES-256-GCM encryption for all API keys stored in PostgreSQL database
+-   **Real Balance Tracking**: `/api/rebalance/status` endpoint fetches actual account balances from connected exchanges
+
 **Key Features Implemented:**
 -   **Automated Trading Bot**: A 24/7 auto-execution engine with intelligent position sizing, cooldown systems, and daily profit limits. Supports aggressive and conservative modes.
 -   **Advanced Alert System**: Multi-channel notifications (Telegram, Discord, Email) with custom triggers based on profit percentage, price changes, or volume, categorized by urgency.
