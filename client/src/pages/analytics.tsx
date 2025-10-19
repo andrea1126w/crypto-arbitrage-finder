@@ -3,10 +3,12 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { TrendingUp, DollarSign, Target, Award, Calendar, RefreshCw } from "lucide-react";
+import { TrendingUp, DollarSign, Target, Award, Calendar, RefreshCw, Activity } from "lucide-react";
 import type { OpportunityHistory } from "@shared/schema";
 import { SUPPORTED_EXCHANGES } from "@shared/schema";
+import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 
 interface HistoryStats {
   totalOpportunities: number;
@@ -149,7 +151,7 @@ export default function Analytics() {
                 Dashboard Analytics
               </h1>
               <p className="text-sm text-muted-foreground">
-                Analisi storica delle opportunità di arbitraggio
+                Analisi storica e metriche avanzate di performance
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -181,6 +183,19 @@ export default function Analytics() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        <Tabs defaultValue="history" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="history" data-testid="tab-history">
+              <Calendar className="h-4 w-4 mr-2" />
+              Storico
+            </TabsTrigger>
+            <TabsTrigger value="advanced" data-testid="tab-advanced">
+              <Activity className="h-4 w-4 mr-2" />
+              Analytics Pro
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="history" className="space-y-6">
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             {[1, 2, 3, 4].map((i) => (
@@ -443,6 +458,12 @@ export default function Analytics() {
             )}
           </>
         )}
+          </TabsContent>
+
+          <TabsContent value="advanced">
+            <AdvancedAnalytics />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
