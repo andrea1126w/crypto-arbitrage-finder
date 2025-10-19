@@ -9,12 +9,13 @@ interface ExchangeCredentials {
   apiSecret: string;
 }
 
-interface TradeExecutionResult {
+export interface TradeExecutionResult {
   success: boolean;
   message: string;
   buyOrderId?: string;
   sellOrderId?: string;
   actualProfit?: number;
+  quantity?: number;
   buyFilled?: number;
   sellFilled?: number;
   errors?: string[];

@@ -135,3 +135,123 @@ export const exchangeCredentials = pgTable("exchange_credentials", {
 
 export type ExchangeCredentials = typeof exchangeCredentials.$inferSelect;
 export type InsertExchangeCredentials = typeof exchangeCredentials.$inferInsert;
+
+// Trading Bot Configuration
+export const botConfig = pgTable("bot_config", {
+  id: serial("id").primaryKey(),
+  enabled: boolean("enabled").default(false),
+  mode: varchar("mode", { length: 20 }).default("conservative"), // conservative | aggressive
+  minProfitPercent: real("min_profit_percent").default(1.0),
+  maxDailyTrades: integer("max_daily_trades").default(20),
+  maxDailyProfit: real("max_daily_profit").default(50),
+  tradingHoursStart: integer("trading_hours_start").default(0), // 0-23
+  tradingHoursEnd: integer("trading_hours_end").default(23),
+  cooldownSeconds: integer("cooldown_seconds").default(60),
+  positionSizePercent: real("position_size_percent").default(10), // % of capital per trade
+  whitelistExchanges: varchar("whitelist_exchanges", { length: 500 }), // JSON array
+  blacklistExchanges: varchar("blacklist_exchanges", { length: 500 }), // JSON array
+  stopOnConsecutiveLosses: integer("stop_on_consecutive_losses").default(3),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type BotConfig = typeof botConfig.$inferSelect;
+export type InsertBotConfig = typeof botConfig.$inferInsert;
+
+// Trade Execution History (detailed)
+export const tradeExecutions = pgTable("trade_executions", {
+  id: serial("id").primaryKey(),
+  opportunityId: varchar("opportunity_id", { length: 100 }),
+  pair: varchar("pair", { length: 50 }).notNull(),
+  buyExchange: varchar("buy_exchange", { length: 50 }).notNull(),
+  sellExchange: varchar("sell_exchange", { length: 50 }).notNull(),
+  buyPrice: real("buy_price").notNull(),
+  sellPrice: real("sell_price").notNull(),
+  quantity: real("quantity").notNull(),
+  capitalUsed: real("capital_used").notNull(),
+  estimatedProfit: real("estimated_profit").notNull(),
+  actualProfit: real("actual_profit"),
+  status: varchar("status", { length: 20 }).notNull(), // pending | completed | failed | partial
+  executionType: varchar("execution_type", { length: 20 }).notNull(), // manual | auto
+  buyOrderId: varchar("buy_order_id", { length: 100 }),
+  sellOrderId: varchar("sell_order_id", { length: 100 }),
+  errorMessage: varchar("error_message", { length: 500 }),
+  executedAt: timestamp("executed_at").notNull().defaultNow(),
+});
+
+export type TradeExecution = typeof tradeExecutions.$inferSelect;
+export type InsertTradeExecution = typeof tradeExecutions.$inferInsert;
+
+// Alert Configuration
+export const alertConfigs = pgTable("alert_configs", {
+  id: serial("id").primaryKey(),
+  type: varchar("type", { length: 50 }).notNull(), // telegram | discord | email | browser
+  enabled: boolean("enabled").default(true),
+  webhookUrl: varchar("webhook_url", { length: 500 }),
+  telegramChatId: varchar("telegram_chat_id", { length: 100 }),
+  telegramBotToken: varchar("telegram_bot_token", { length: 200 }),
+  minProfitPercent: real("min_profit_percent").default(1.5), // Only alert if > this
+  silentHoursStart: integer("silent_hours_start"), // 0-23, optional
+  silentHoursEnd: integer("silent_hours_end"), // 0-23, optional
+  alertFrequency: varchar("alert_frequency", { length: 20 }).default("immediate"), // immediate | digest
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type AlertConfig = typeof alertConfigs.$inferSelect;
+export type InsertAlertConfig = typeof alertConfigs.$inferInsert;
+
+// Portfolio Metrics (daily aggregation)
+export const portfolioMetrics = pgTable("portfolio_metrics", {
+  id: serial("id").primaryKey(),
+  date: timestamp("date").notNull(),
+  totalCapital: real("total_capital").notNull(),
+  totalProfit: real("total_profit").notNull(),
+  totalTrades: integer("total_trades").notNull(),
+  winningTrades: integer("winning_trades").notNull(),
+  losingTrades: integer("losing_trades").notNull(),
+  avgProfitPerTrade: real("avg_profit_per_trade").notNull(),
+  bestTrade: real("best_trade").notNull(),
+  worstTrade: real("worst_trade").notNull(),
+  winRate: real("win_rate").notNull(), // percentage
+  sharpeRatio: real("sharpe_ratio"),
+  maxDrawdown: real("max_drawdown"),
+  arbitrageProfits: real("arbitrage_profits").notNull(),
+  yieldFarmingProfits: real("yield_farming_profits").notNull(),
+  flashLoanProfits: real("flash_loan_profits").notNull(),
+});
+
+export type PortfolioMetrics = typeof portfolioMetrics.$inferSelect;
+export type InsertPortfolioMetrics = typeof portfolioMetrics.$inferInsert;
+
+// AI Price Predictions
+export const aiPredictions = pgTable("ai_predictions", {
+  id: serial("id").primaryKey(),
+  pair: varchar("pair", { length: 50 }).notNull(),
+  currentPrice: real("current_price").notNull(),
+  predicted1h: real("predicted_1h"),
+  predicted6h: real("predicted_6h"),
+  predicted24h: real("predicted_24h"),
+  confidence: real("confidence"), // 0-1
+  modelVersion: varchar("model_version", { length: 50 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type AIPrediction = typeof aiPredictions.$inferSelect;
+export type InsertAIPrediction = typeof aiPredictions.$inferInsert;
+
+// Pattern Detection Results
+export const detectedPatterns = pgTable("detected_patterns", {
+  id: serial("id").primaryKey(),
+  patternType: varchar("pattern_type", { length: 100 }).notNull(),
+  pair: varchar("pair", { length: 50 }),
+  exchange: varchar("exchange", { length: 50 }),
+  description: varchar("description", { length: 500 }).notNull(),
+  confidence: real("confidence").notNull(), // 0-1
+  expectedProfitPercent: real("expected_profit_percent"),
+  timeframe: varchar("timeframe", { length: 50 }), // hourly | daily | weekly
+  occurrences: integer("occurrences").default(1),
+  lastOccurrence: timestamp("last_occurrence").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type DetectedPattern = typeof detectedPatterns.$inferSelect;
+export type InsertDetectedPattern = typeof detectedPatterns.$inferInsert;
