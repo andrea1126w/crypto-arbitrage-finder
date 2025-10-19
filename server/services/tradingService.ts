@@ -3,6 +3,7 @@ import { db } from "../db";
 import { exchangeCredentials } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { encrypt, decrypt } from "./encryptionService";
+import crypto from "crypto";
 
 interface ExchangeCredentials {
   apiKey: string;
@@ -289,12 +290,128 @@ export class TradingService {
       throw new Error(`Credenziali mancanti per ${exchange}`);
     }
 
-    // Simula chiamata API per ottenere saldo
-    // In produzione: chiamata vera all'API dell'exchange
-    await new Promise(resolve => setTimeout(resolve, 200));
+    const normalizedExchange = exchange.toLowerCase();
+
+    try {
+      if (normalizedExchange === "binance") {
+        return await this.getBinanceBalance(asset);
+      } else if (normalizedExchange === "kucoin") {
+        return await this.getKuCoinBalance(asset);
+      } else {
+        // Fallback per altri exchange non ancora implementati
+        console.warn(`⚠️ Exchange ${exchange} non ancora supportato, usando dati simulati`);
+        return 50 + Math.random() * 100;
+      }
+    } catch (error) {
+      console.error(`❌ Errore nel fetch balance da ${exchange}:`, error);
+      throw error;
+    }
+  }
+
+  // Chiamata API REALE Binance
+  private async getBinanceBalance(asset: string): Promise<number> {
+    const credentials = await this.getCredentials("binance");
+    if (!credentials) {
+      throw new Error("Credenziali Binance non trovate");
+    }
+
+    const baseUrl = "https://api.binance.com";
+    const endpoint = "/api/v3/account";
+    const timestamp = Date.now();
+    const queryString = `timestamp=${timestamp}&recvWindow=5000`;
+
+    // Genera signature HMAC-SHA256
+    const signature = crypto
+      .createHmac("sha256", credentials.apiSecret)
+      .update(queryString)
+      .digest("hex");
+
+    // Chiamata API
+    const url = `${baseUrl}${endpoint}?${queryString}&signature=${signature}`;
+    const response = await fetch(url, {
+      headers: {
+        "X-MBX-APIKEY": credentials.apiKey,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Binance API error: ${error}`);
+    }
+
+    const data = await response.json();
     
-    // Ritorna saldo simulato
-    return 50 + Math.random() * 100; // $50-150 disponibili
+    // Trova il balance dell'asset richiesto
+    const balanceObj = data.balances.find((b: any) => b.asset === asset.toUpperCase());
+    const balance = balanceObj ? parseFloat(balanceObj.free) : 0;
+
+    console.log(`✅ Binance ${asset}: $${balance.toFixed(2)}`);
+    return balance;
+  }
+
+  // Chiamata API REALE KuCoin
+  private async getKuCoinBalance(asset: string): Promise<number> {
+    const credentials = await this.getCredentials("kucoin");
+    if (!credentials) {
+      throw new Error("Credenziali KuCoin non trovate");
+    }
+
+    // KuCoin richiede anche passphrase (salvata come parte dell'apiSecret in formato "secret:passphrase")
+    const [apiSecret, passphrase] = credentials.apiSecret.includes(":")
+      ? credentials.apiSecret.split(":")
+      : [credentials.apiSecret, ""];
+
+    if (!passphrase) {
+      throw new Error("KuCoin passphrase mancante. Salva come 'secret:passphrase'");
+    }
+
+    const baseUrl = "https://api.kucoin.com";
+    const endpoint = `/api/v1/accounts?currency=${asset.toUpperCase()}&type=trade`;
+    const method = "GET";
+    const timestamp = Date.now().toString();
+
+    // Prehash string: timestamp + method + endpoint
+    const prehash = timestamp + method + endpoint;
+
+    // Genera signature
+    const signature = crypto
+      .createHmac("sha256", apiSecret)
+      .update(prehash)
+      .digest("base64");
+
+    // Encrypt passphrase
+    const encryptedPassphrase = crypto
+      .createHmac("sha256", apiSecret)
+      .update(passphrase)
+      .digest("base64");
+
+    // Chiamata API
+    const url = `${baseUrl}${endpoint}`;
+    const response = await fetch(url, {
+      headers: {
+        "KC-API-KEY": credentials.apiKey,
+        "KC-API-SIGN": signature,
+        "KC-API-TIMESTAMP": timestamp,
+        "KC-API-PASSPHRASE": encryptedPassphrase,
+        "KC-API-KEY-VERSION": "2",
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`KuCoin API error: ${error}`);
+    }
+
+    const data = await response.json();
+
+    // Somma tutti i balance disponibili per quell'asset
+    const totalBalance = data.data.reduce((sum: number, acc: any) => {
+      return sum + parseFloat(acc.available || "0");
+    }, 0);
+
+    console.log(`✅ KuCoin ${asset}: $${totalBalance.toFixed(2)}`);
+    return totalBalance;
   }
 
   // Verifica se exchange ha saldo sufficiente
