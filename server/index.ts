@@ -1,3 +1,12 @@
+// CRITICAL FIX: Disable WebSocket for @neondatabase/serverless in production (Railway)
+// Must be set BEFORE any db imports to prevent WebSocket connection errors
+import { neonConfig } from '@neondatabase/serverless';
+import ws from "ws";
+
+if (process.env.NODE_ENV === 'development') {
+  neonConfig.webSocketConstructor = ws;
+}
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
